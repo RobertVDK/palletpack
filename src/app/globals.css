@@ -1,0 +1,146 @@
+@import "tailwindcss";
+
+/* PalletPack tokens: graphite steel floor, safety-yellow signal, kraft and pine for the goods. */
+@theme {
+  --color-steel-950: #12161c;
+  --color-steel-900: #181d24;
+  --color-steel-850: #1d232b;
+  --color-steel-800: #222932;
+  --color-steel-750: #29313c;
+  --color-steel-700: #313a46;
+  --color-steel-600: #414c5b;
+  --color-steel-500: #5b6779;
+  --color-steel-400: #8a96a8;
+  --color-steel-300: #aeb8c6;
+  --color-steel-200: #ccd3dd;
+  --color-steel-100: #e3e8ee;
+  --color-steel-50: #f2f5f8;
+
+  --color-signal: #ffc531;
+  --color-signal-hover: #ffd35e;
+  --color-signal-ink: #1f1700;
+  --color-kraft: #c8a27a;
+  --color-kraft-dark: #8b6b47;
+  --color-pine: #d9b98a;
+  --color-ok: #3fd0a0;
+  --color-warn: #ff9f43;
+  --color-bad: #ff6b5b;
+  --color-live: #7fd47b;
+  --color-frozen: #74c7ff;
+  --color-label: #fbfaf6;
+
+  --font-sans: var(--font-archivo), ui-sans-serif, system-ui, sans-serif;
+
+  --animate-arrive: arrive 900ms cubic-bezier(0.2, 0.8, 0.2, 1);
+  --animate-scan: scan 1.4s ease-in-out infinite;
+  @keyframes arrive {
+    0% {
+      transform: translateY(-14px);
+      opacity: 0;
+      box-shadow: 0 0 0 0 rgb(255 197 49 / 0.65);
+    }
+    55% {
+      opacity: 1;
+      box-shadow: 0 0 0 6px rgb(255 197 49 / 0.18);
+    }
+    100% {
+      transform: none;
+      box-shadow: 0 0 0 0 rgb(255 197 49 / 0);
+    }
+  }
+  @keyframes scan {
+    0%,
+    100% {
+      transform: translateX(-100%);
+    }
+    50% {
+      transform: translateX(100%);
+    }
+  }
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body {
+  background: var(--color-steel-900);
+  color: var(--color-steel-100);
+}
+
+body {
+  font-family: var(--font-sans);
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Archivo's width axis does the heavy lifting: expanded for stencil-like readouts. */
+.wide {
+  font-stretch: 125%;
+}
+.semiwide {
+  font-stretch: 112%;
+}
+.narrow {
+  font-stretch: 85%;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-signal);
+  outline-offset: 2px;
+}
+
+::selection {
+  background: rgb(255 197 49 / 0.35);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-steel-600) transparent;
+}
+
+/* Floor-tape stripe used for hazards and the empty pack zone. */
+.tape {
+  background-image: repeating-linear-gradient(-45deg, var(--color-signal) 0 10px, #15181d 10px 20px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 1ms !important;
+    transition-duration: 1ms !important;
+  }
+}
+
+@media print {
+  html,
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  /* Print only the label / pack-sheet block, wherever it sits in the app. */
+  body * {
+    visibility: hidden;
+  }
+  .print-only,
+  .print-only * {
+    visibility: visible;
+  }
+  .print-only {
+    display: block !important;
+    position: absolute !important;
+    inset: 0 auto auto 0 !important;
+    background: white;
+  }
+  .no-print {
+    display: none !important;
+  }
+  .label-sheet {
+    break-after: page;
+  }
+}
+.print-only {
+  display: none;
+}

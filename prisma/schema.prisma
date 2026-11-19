@@ -1,0 +1,131 @@
+// PalletPack demo data model (SQLite for the local demo; the same model maps to MariaDB).
+// Lengths are millimetres, weights grams, money integer cents (CAD). JSON blobs are stored as text.
+
+generator client {
+  provider     = "prisma-client"
+  output       = "../src/generated/prisma"
+  moduleFormat = "esm"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Product {
+  id               String      @id
+  handle           String      @unique
+  title            String
+  url              String
+  image            String
+  vendor           String?
+  productType      String?
+  category         String
+  priceCents       Int?
+  sku              String
+  length           Int
+  width            Int
+  height           Int
+  /// "listing" when taken from the store listing, "estimated" when made up for the demo
+  dimsSource       String
+  dimsNote         String
+  weight           Int
+  weightSource     String
+  weightNote       String
+  handling         String // standard | live | frozen
+  fragile          Boolean
+  keepUpright      Boolean
+  shipsInOwnBox    Boolean
+  maxLoad          Int
+  requiresShipping Boolean
+  pickupOnly       Boolean
+  /// Set when a person confirmed the dimensions on the warehouse floor
+  verifiedAt       DateTime?
+  lines            OrderLine[]
+
+  @@index([category])
+}
+
+model Container {
+  id          String  @id
+  name        String
+  kind        String // box | pallet
+  innerL      Int
+  innerW      Int
+  innerH      Int
+  outerL      Int
+  outerW      Int
+  outerH      Int
+  tare        Int
+  maxGross    Int
+  costCents   Int
+  insulated   Boolean @default(false)
+  accepts     String // comma list of handling types
+  stock       Int
+  coolant     Int?
+  deckHeight  Int?
+  active      Boolean @default(true)
+  sort        Int     @default(0)
+}
+
+model Setting {
+  key   String @id
+  value String
+}
+
+model Order {
+  id           String     @id
+  number       String     @unique
+  channel      String // web | wholesale | phone | api
+  status       String // new | planned | verified | rated | shipped
+  customer     String
+  company      String?
+  email        String
+  phone        String?
+  address1     String
+  city         String
+  province     String
+  postal       String
+  residential  Boolean
+  scenario     String?
+  note         String?
+  placedAt     DateTime   @default(now())
+  lines        OrderLine[]
+  shipment     Shipment?
+
+  @@index([status, placedAt])
+}
+
+model OrderLine {
+  id         String  @id
+  orderId    String
+  productId  String
+  qty        Int
+  priceCents Int
+  order      Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product    Product @relation(fields: [productId], references: [id])
+
+  @@index([orderId])
+}
+
+model Shipment {
+  id          String    @id
+  orderId     String    @unique
+  mode        String // boxes | skid
+  /// PackPlan as JSON
+  plan        String
+  /// Recommendation reasons + alternative totals as JSON
+  advice      String
+  /// Per-package verification: [{ id, status, method, dims, weight, at }]
+  checks      String    @default("[]")
+  /// Quotes returned by the rate engine
+  quotes      String    @default("[]")
+  /// Chosen quote
+  rate        String?
+  /// Labels / tracking numbers / BOL
+  labels      String    @default("[]")
+  totalCents  Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  shippedAt   DateTime?
+  order       Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
